@@ -1,3 +1,18 @@
+import mlx.core as mx
+
+
+def _sample_without_replacement(probs: mx.array, num_samples: int) -> mx.array:
+    """
+    Weighted sampling without replacement via the Gumbel-top-k trick.
+    mx.random.categorical only samples with replacement, so this fills the
+    same role as torch.multinomial(..., replacement=False).
+    """
+    log_probs = mx.log(probs + 1e-12)
+    gumbel_noise = -mx.log(-mx.log(mx.random.uniform(shape=probs.shape) + 1e-12) + 1e-12)
+    order = mx.argsort(log_probs + gumbel_noise)[::-1]
+    return order[:num_samples]
+
+
 def choose_probe_candidates(candidate_ids, candidate_probs, n_head=8, n_tail=4):
     """
     Always probe the most likely candidates.
@@ -9,18 +24,17 @@ def choose_probe_candidates(candidate_ids, candidate_probs, n_head=8, n_tail=4):
     tail_ids = candidate_ids[n_head:]
     tail_probs = candidate_probs[n_head:]
 
-    if tail_ids.numel() == 0 or n_tail == 0:
+    if tail_ids.shape[0] == 0 or n_tail == 0:
         return head_ids, head_probs
 
-    tail_probs = tail_probs / tail_probs.sum()
-    sampled_tail_idx = torch.multinomial(
-        tail_probs,
-        num_samples=min(n_tail, tail_ids.numel()),
-        replacement=False
+    tail_probs_norm = tail_probs / tail_probs.sum()
+    sampled_tail_idx = _sample_without_replacement(
+        tail_probs_norm,
+        num_samples=min(n_tail, tail_ids.shape[0]),
     )
 
-    probe_ids = torch.cat([head_ids, tail_ids[sampled_tail_idx]])
-    probe_probs = torch.cat([head_probs, candidate_probs[n_head:][sampled_tail_idx]])
+    probe_ids = mx.concatenate([head_ids, tail_ids[sampled_tail_idx]])
+    probe_probs = mx.concatenate([head_probs, tail_probs[sampled_tail_idx]])
 
     probe_probs = probe_probs / probe_probs.sum()
 

@@ -1,15 +1,10 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+from mlx_lm import load
 
-model_name = "Qwen/Qwen2.5-1.5B-Instruct"
+from generate_future_entropy import generate_future_entropy
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+model_name = "Qwen/Qwen3-8B-MLX-6bit"
 
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    torch_dtype=torch.float16,
-    device_map="auto"
-)
+model, tokenizer = load(model_name)
 
 text = generate_future_entropy(
     model=model,
@@ -20,6 +15,7 @@ text = generate_future_entropy(
     future_top_n=20,
     alpha=0.0,
     temperature=1.0,
+    stop_sequence="\n\n",
 )
 
 print(text)

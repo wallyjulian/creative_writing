@@ -1,4 +1,8 @@
-@torch.no_grad()
+import mlx.core as mx
+
+from normalized_entropy import sample_future_entropy_token
+
+
 def generate_future_entropy(
     model,
     tokenizer,
@@ -8,15 +12,15 @@ def generate_future_entropy(
     future_top_n: int = 20,
     alpha: float = 0.0,
     temperature: float = 1.0,
+    stop_sequence: str = None,
 ):
-    model.eval()
-
-    device = next(model.parameters()).device
-
-    input_ids = tokenizer(
-        prompt,
-        return_tensors="pt"
-    ).input_ids.to(device)
+    prompt_tokens = tokenizer.apply_chat_template(
+        [{"role": "user", "content": prompt}],
+        add_generation_prompt=True,
+        enable_thinking=False,
+    )
+    input_ids = mx.array(prompt_tokens)[None, :]
+    prompt_len = input_ids.shape[1]
 
     for _ in range(max_new_tokens):
         next_id, debug = sample_future_entropy_token(
@@ -28,10 +32,12 @@ def generate_future_entropy(
             temperature=temperature,
         )
 
-        input_ids = torch.cat([input_ids, next_id], dim=1)
+        input_ids = mx.concatenate([input_ids, next_id], axis=1)
 
-        if tokenizer.eos_token_id is not None:
-            if next_id.item() == tokenizer.eos_token_id:
-                break
+        if next_id.item() in tokenizer.eos_token_ids:
+            break
 
-    return tokenizer.decode(input_ids[0], skip_special_tokens=True)
+        if stop_sequence and stop_sequence in tokenizer.decode(input_ids[0, prompt_len:].tolist()):
+            break
+
+    return tokenizer.decode(input_ids[0, prompt_len:].tolist())

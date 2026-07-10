@@ -1,3 +1,7 @@
+------------------------------------------------------------------------
+
+editor_options: markdown: wrap: sentence ---
+
 # gstack
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
@@ -6,20 +10,16 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 ## Project
 
-This repo is a standalone `CLAUDE.md` template: behavioral guidelines for LLM coding agents. There is no application code and no build step.
+This repo is a project to build a "future-entropy sampler" per [this article](https://www.countbayesie.com/blog/2026/7/1/making-llms-better-at-creative-writing-using-entropy) by Will Kurt.
 
-- The whole project is this file. Copy it into your own repo, then fill in Section 5 (Harness) with the test/lint/type commands for your stack.
+- The whole project is in the folder /python. It has not run yet and exists only as suggested scripts base on the article. The purpose of this project is to get it working.
 - No test/lint/type harness here (see Section 5).
 
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+Before implementing: - State your assumptions explicitly. If uncertain, ask. - If multiple interpretations exist, present them - don't pick silently. - If a simpler approach exists, say so. Push back when warranted. - If something is unclear, stop. Name what's confusing. Ask.
 
 ## 2. Simplicity First
 
@@ -37,15 +37,9 @@ Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, sim
 
 **Touch only what you must. Clean up only your own mess.**
 
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+When editing existing code: - Don't "improve" adjacent code, comments, or formatting. - Don't refactor things that aren't broken. - Match existing style, even if you'd do it differently. - If you notice unrelated dead code, mention it - don't delete it.
 
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+When your changes create orphans: - Remove imports/variables/functions that YOUR changes made unused. - Don't remove pre-existing dead code unless asked.
 
 The test: Every changed line should trace directly to the user's request.
 
@@ -53,13 +47,11 @@ The test: Every changed line should trace directly to the user's request.
 
 **Define success criteria. Loop until verified.**
 
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+Transform tasks into verifiable goals: - "Add validation" → "Write tests for invalid inputs, then make them pass" - "Fix the bug" → "Write a test that reproduces it, then make it pass" - "Refactor X" → "Ensure tests pass before and after"
 
 For multi-step tasks, state a brief plan:
-```
+
+```         
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
@@ -70,8 +62,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## 5. Harness
 
 This project has no automated test/type/lint harness. "Done" means the change renders correctly in a browser (verify with `/browse`) and the HTML is valid.
-
-If you add tooling later, list the exact commands here.
 
 ## 6. Loops & Autonomy
 
