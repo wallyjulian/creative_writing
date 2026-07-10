@@ -1,3 +1,14 @@
+"""
+Selects which candidate next-tokens get probed with an extra forward pass
+in normalized_entropy.py's future_entropy_scores.
+
+Probing every top-k candidate would mean one forward pass per candidate on
+top of the main one, at every generation step, so only a subset is probed:
+the most likely few tokens are always probed, plus a small random sample
+of the remaining tail (weighted by their probability) so lower-ranked but
+still plausible tokens occasionally get a chance to influence the score.
+"""
+
 import mlx.core as mx
 
 

@@ -1,3 +1,11 @@
+"""
+Driver for generate_future_entropy_wave (alpha-wave / rhythmic-decoding
+future-entropy sampler). Loads the model and generates from a fixed
+prompt; edit `prompt` below to try other text.
+
+For a CLI equivalent of the fixed-alpha sampler, see example_01.py.
+"""
+
 from mlx_lm import load
 
 from generate_future_entropy_wave import generate_future_entropy_wave

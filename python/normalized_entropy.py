@@ -1,3 +1,16 @@
+"""
+Core future-entropy scoring and sampling logic.
+
+Given the model's current next-token distribution, this module scores each
+candidate token by how much "future choice" it unlocks: for each candidate,
+it runs one extra forward pass appending that candidate to the context, then
+measures the (normalized) entropy of the resulting next-next-token
+distribution. Candidates that lead to a wide-open future are favored over
+ones that funnel into a single forced continuation, tunable against the
+candidate's own probability via `alpha`. See /docs for the math and the
+originating article.
+"""
+
 import math
 import mlx.core as mx
 
@@ -38,11 +51,33 @@ def future_entropy_scores(
     probe_n_tail: int = 4,
 ):
     """
-    Computes Future-entropy scores for a probed subset of candidate next tokens.
+    Computes future-entropy scores for a probed subset of candidate next tokens.
+
+    For each probed candidate token, appends it to `input_ids`, runs the
+    model to get the distribution over the token that would follow it,
+    takes that distribution's normalized entropy over its own top
+    `future_top_n`, then combines it with the candidate's own probability:
+
+        score(w) = p(w)^a * H(w)^b
+        a = 1 - max(0, alpha)
+        b = 1 - max(0, -alpha)
+
+    alpha in [-1, 1] slides the exponents so alpha=-1 collapses to
+    probability-only (b=0), alpha=1 collapses to entropy-only (a=0), and
+    alpha=0 weighs both equally.
 
     input_ids shape is [1, seq_len]
     candidate_ids shape is [k]
     candidate_probs shape is [k]
+
+    Only a subset of candidates is actually probed (see
+    choose_probe_candidates.py) since each one costs a full extra forward
+    pass; this is the dominant cost of the sampler.
+
+    Returns:
+        probe_ids: token ids that were probed.
+        scores: normalized final scores for probe_ids (sums to 1).
+        entropies: raw normalized future entropy per probed candidate.
     """
     probe_ids, probe_probs = choose_probe_candidates(
         candidate_ids, candidate_probs, n_head=probe_n_head, n_tail=probe_n_tail
@@ -95,7 +130,17 @@ def sample_future_entropy_token(
     probe_n_tail: int = 4,
 ):
     """
-    Samples one token using Future-entropy sampling.
+    Samples one token using future-entropy sampling: computes the current
+    top-`candidate_top_k` next-token distribution, scores those candidates
+    via future_entropy_scores, then samples one from the resulting score
+    distribution.
+
+    Returns:
+        chosen_id: the sampled token id, shaped [1, 1] to match input_ids'
+            dtype/rank so it can be concatenated directly.
+        debug: dict of intermediate values (candidate/probe ids and probs,
+            future entropies, final scores, sampled index) useful for
+            inspecting the sampler's behavior at a given step.
     """
     logits = model(input_ids)[:, -1, :].squeeze(0)
 
