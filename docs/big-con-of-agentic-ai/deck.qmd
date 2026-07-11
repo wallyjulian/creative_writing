@@ -1,0 +1,306 @@
+---
+title: "The Big Con of Agentic AI"
+subtitle: "What over-dependence on consultants teaches us about delegating cognition to machines"
+author: "Source: Chinmay Kakatkar, *Towards Data Science*, 2026"
+format:
+  revealjs:
+    theme: [simple, theme.scss]
+    slide-number: true
+    transition: fade
+    width: 1100
+    height: 700
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(ggplot2)
+
+ink   <- "#23272f"
+accent <- "#3b5169"
+soft   <- "#a9b7c6"
+flag   <- "#a5342a"
+paper  <- "#faf9f6"
+
+deck_theme <- theme_minimal(base_size = 20) +
+  theme(
+    plot.background  = element_rect(fill = paper, color = NA),
+    panel.background = element_rect(fill = paper, color = NA),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    axis.title = element_blank(),
+    axis.text  = element_text(color = ink, size = 16),
+    plot.title = element_text(color = ink, face = "bold", size = 18)
+  )
+```
+
+## Most of every AI-token dollar pays for AI's own mistakes {.center}
+
+::: {.hook-stat}
+For every **\$1** spent on AI tokens, **18 cents** creates user-facing value.
+**44 cents** pays to fix bugs the AI itself introduced.
+:::
+
+```{r fig-token-spend}
+#| fig-height: 3.6
+df <- data.frame(
+  category = c("Value created", "Fixing AI bugs", "Everything else"),
+  cents = c(18, 44, 38)
+)
+df$category <- factor(df$category, levels = rev(df$category))
+df$fill <- c(soft, flag, soft)[match(df$category, rev(c("Value created", "Fixing AI bugs", "Everything else")))]
+
+ggplot(df, aes(category, cents, fill = category)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = paste0(cents, "¢")), hjust = -0.15, size = 6, color = ink) +
+  scale_fill_manual(values = c("Value created" = soft, "Fixing AI bugs" = flag, "Everything else" = soft)) +
+  coord_flip(clip = "off") +
+  ylim(0, 55) +
+  deck_theme +
+  theme(axis.text.y = element_text(size = 18, face = "bold"))
+```
+
+::: {.cite}
+Survey of ~2,500 companies, cited in the source article.
+:::
+
+## Agentic AI is repeating a known structural trap
+
+- Consulting extracted returns beyond the value it created by fostering
+  **dependency**, not by fraud.
+- The pattern is structural: rational, incremental delegation compounds into
+  a dependency that is expensive to reverse once entrenched.
+- Agentic AI is running the same play, faster, and at three nested levels:
+  individual, organizational, societal.
+
+## Roadmap
+
+1. The original con — how management consulting did this first
+2. The next big con — how agentic AI repeats it, faster
+3. The cost, at three levels: individual, organizational, societal
+4. Two dead ends, and a third path
+
+## The original con extracted value from dependency, not fraud
+
+Mazzucato & Collington, *The Big Con* (2023): clients who outsource a
+strategic function for years lose the internal expertise needed to judge
+whether the advice they're buying is any good — which is exactly what keeps
+them buying it.
+
+No cynicism required. No negligence required. Just repeated delegation
+running its natural course.
+
+## The mechanism: the less you row, the less you steer
+
+::: {layout-ncol="3" layout-valign="center"}
+::: {.mechanism-box}
+Delegate a function
+:::
+
+::: {.mechanism-arrow}
+→
+:::
+
+::: {.mechanism-box}
+Internal capability atrophies
+:::
+:::
+
+::: {layout-ncol="3" layout-valign="center"}
+::: {.mechanism-box}
+Atrophy deepens dependency
+:::
+
+::: {.mechanism-arrow}
+→
+:::
+
+::: {.mechanism-box}
+Less capacity to steer or challenge
+:::
+:::
+
+> "The less \[an organization\] rows, the less it learns, the less
+> productive it becomes: the less it can steer." — Mazzucato & Collington
+
+## Comparative advantage is rational — until it eats identity-defining work
+
+Outsourcing peripheral tasks (payroll, tax filing, IT support) is a
+defensible specialization decision. The trap opens when the same logic
+reaches the **strategic, identity-defining work**: a student's thinking, a
+company's strategy, a government's policymaking.
+
+With agentic AI, delegated agency doesn't even land with another
+accountable party — it lands with a system that has none.
+
+## The same structural logic, one level faster
+
+```{r table-parallel}
+library(knitr)
+library(kableExtra)
+
+parallel_df <- data.frame(
+  Mechanism = c(
+    "Dependency built via",
+    "Pricing dynamic",
+    "Who bears the risk",
+    "Advisor conflict of interest"
+  ),
+  Consulting = c(
+    "Years-long strategic engagements",
+    "Fee structures reward repeat engagements",
+    "Client's eroded ability to evaluate advice",
+    "Consultants advise on their own future scope"
+  ),
+  `Agentic AI` = c(
+    "Deep tool/workflow integration in months",
+    "Below-cost pricing to capture market share",
+    "Organization's eroded ability to evaluate output",
+    "Same firms now sell AI-adoption advisory too"
+  ),
+  check.names = FALSE
+)
+
+kable(parallel_df, align = "l") |>
+  kable_styling(font_size = 20, full_width = TRUE) |>
+  row_spec(0, bold = TRUE, color = ink) |>
+  column_spec(1, bold = TRUE, width = "22%")
+```
+
+## Subsidized pricing today is designed to become lock-in tomorrow
+
+AI services are currently priced well below the true cost of delivery, the
+same playbook early cloud and SaaS vendors used to build integration depth
+before raising prices. GitHub Copilot's move to usage-based billing is an
+early instance, not an outlier.
+
+Goldman Sachs forecasts a **24x** increase in token consumption by 2030 —
+compressing the price decline vendors are counting on to offset it.
+
+## Real-world costs are already landing
+
+```{r table-costs}
+costs_df <- data.frame(
+  Organization = c("Uber", "Microsoft", "Salesforce"),
+  Signal = c(
+    "Exhausted its entire annual AI coding budget in 4 months",
+    "Cut internal AI coding licenses ~6 months after mandating adoption",
+    "Expects to pay Anthropic roughly $300M in 2026 alone"
+  )
+)
+
+kable(costs_df, align = "l") |>
+  kable_styling(font_size = 22, full_width = TRUE) |>
+  row_spec(0, bold = TRUE, color = ink) |>
+  column_spec(1, bold = TRUE, width = "20%")
+```
+
+At some firms, AI token spend already equals **10%** of total labor costs.
+
+## Vendors are reframing AI from augmentation to replacement
+
+Software budgets are smaller and less strategic than payroll budgets, so
+recasting AI as **labor replacement** implies a far larger addressable
+market than "augmentation" ever did.
+
+The firms best positioned to advise clients on this transition are the same
+consultancies that drove the original outsourcing wave — and that have no
+structural incentive to build the internal capability that would make
+follow-on engagements unnecessary.
+
+## Individual cost: cognitive debt replaces independent thinking
+
+Prolonged AI assistance can leave a blank page feeling not just
+uncomfortable, but daunting.
+
+- RCTs: brief AI assistance impairs subsequent unaided performance, and
+  participants stop trying sooner (**hedonic adaptation**).
+- A 2027 study: measurably lower neural connectivity in participants who
+  used AI to write essays — researchers call the pattern **cognitive
+  debt**.
+- ~2,000 professionals: most say AI "did most of the thinking," and the
+  resulting ideas didn't feel fully their own.
+
+## Organizational cost: the oversight tax
+
+Organizations pay for **both** the AI system and a human reviewer, while
+that reviewer's independent judgment quietly erodes — a **safety-net
+effect** documented in AI-assisted medical screening.
+
+The organization ends up paying twice for a review that increasingly
+rubber-stamps rather than interrogates. Reported productivity gains
+overstate the case; the accountability those gains are meant to justify is
+hollower than it looks.
+
+## Societal cost: accountability sinks and geopolitical dependency
+
+"Human in the loop" was meant to mean a human who can challenge the AI and
+is accountable for the result. In practice it often means a human who
+approves output under time pressure — an **accountability sink**: present
+to absorb blame, not to catch errors.
+
+```{r fig-compute}
+#| fig-height: 3.2
+compute_df <- data.frame(
+  region = c("US + China", "Rest of world"),
+  share = c(90, 10)
+)
+compute_df$region <- factor(compute_df$region, levels = rev(compute_df$region))
+
+ggplot(compute_df, aes(region, share, fill = region)) +
+  geom_col(width = 0.55, show.legend = FALSE) +
+  geom_text(aes(label = paste0(share, "%")), hjust = -0.2, size = 6, color = ink) +
+  scale_fill_manual(values = c("US + China" = flag, "Rest of world" = soft)) +
+  coord_flip(clip = "off") +
+  ylim(0, 100) +
+  labs(title = "Share of global AI compute capacity") +
+  deck_theme +
+  theme(axis.text.y = element_text(size = 18, face = "bold"))
+```
+
+June 2026: the US government ordered Anthropic to suspend its most advanced
+models for all foreign nationals worldwide — with no notice, and no
+recourse for the organizations depending on them.
+
+## Banning AI and adopting it uncritically are both dead ends
+
+**Ban it outright.** Cedes the field to whoever is least inclined to
+exercise restraint, and forfeits real benefits (medicine, research,
+education).
+
+**Adopt it uncritically.** Lets vendor roadmaps and market incentives
+decide how deeply AI penetrates cognitive and democratic life by default —
+which is itself a choice, just an unowned one.
+
+## The third path: ask, at every task, what AI is doing to your agency
+
+```{r table-third-path}
+path_df <- data.frame(
+  Level = c("Individual", "Organizational", "Societal"),
+  `Risk if unmanaged` = c(
+    "Cognitive debt; atrophy of independent judgment",
+    "Institutional memory loss; oversight tax",
+    "Accountability sinks; single-vendor geopolitical dependency"
+  ),
+  `Deliberate countermeasure` = c(
+    "Keep override authority; ask if AI is building capacity or replacing it",
+    "Document, mentor, rotate staff; no single-vendor lock-in",
+    "Legal standard: reviewers must explain and defend, not just approve"
+  ),
+  check.names = FALSE
+)
+
+kable(path_df, align = "l") |>
+  kable_styling(font_size = 19, full_width = TRUE) |>
+  row_spec(0, bold = TRUE, color = ink) |>
+  column_spec(1, bold = TRUE, width = "16%")
+```
+
+## {.closing background-color="#23272f"}
+
+::: {style="text-align: center;"}
+# Do the thinking first.
+:::

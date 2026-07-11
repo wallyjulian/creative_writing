@@ -1,0 +1,121 @@
+/*-- scss:defaults --*/
+
+$body-bg: #faf9f6;
+$body-color: #23272f;
+$link-color: #3b5169;
+
+$presentation-heading-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+$presentation-font-size-root: 28px;
+$presentation-heading-color: #23272f;
+
+/*-- scss:rules --*/
+
+:root {
+  --accent: #3b5169;
+  --accent-soft: #a9b7c6;
+  --flag: #a5342a;
+  --ink: #23272f;
+  --paper: #faf9f6;
+  --rule: #d8d4cb;
+}
+
+.reveal {
+  background-color: var(--paper);
+}
+
+.reveal .slides section {
+  text-align: left;
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.reveal h2 {
+  border-left: 6px solid var(--accent);
+  padding-left: 0.4em;
+  margin-bottom: 0.6em;
+  font-size: 1.35em;
+}
+
+.reveal .title-slide h1 {
+  border-left: none;
+  padding-left: 0;
+  font-size: 1.9em;
+}
+
+.reveal .title-slide .subtitle {
+  color: #55606e;
+  font-weight: 400;
+  font-size: 0.9em;
+}
+
+.reveal p, .reveal li {
+  line-height: 1.4;
+}
+
+.reveal .flag {
+  color: var(--flag);
+  font-weight: 700;
+}
+
+.reveal .closing {
+  background-color: var(--ink) !important;
+}
+
+.reveal .closing h1 {
+  color: var(--paper);
+  border-left: none;
+  padding-left: 0;
+  text-align: center;
+  font-size: 2.1em;
+}
+
+.reveal table {
+  font-size: 0.72em;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.reveal table thead tr {
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.reveal table tbody tr:last-child td {
+  border-bottom: 2px solid var(--ink);
+}
+
+.reveal table th, .reveal table td {
+  border-left: none;
+  border-right: none;
+  padding: 0.35em 0.6em;
+}
+
+.reveal .cite {
+  font-size: 0.55em;
+  color: #8a8f98;
+}
+
+.reveal .hook-stat {
+  font-size: 1.15em;
+  border-left: 4px solid var(--flag);
+  padding-left: 0.5em;
+  margin: 0.4em 0;
+}
+
+.reveal .mechanism-box {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.5em 0.9em;
+  display: inline-block;
+  background-color: #ffffff;
+}
+
+.reveal .mechanism-arrow {
+  font-size: 1.4em;
+  color: var(--accent);
+  margin: 0 0.3em;
+}
