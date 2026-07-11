@@ -1,0 +1,199 @@
+---
+title: "The Future-Entropy Sampler"
+subtitle: "Why an AI writer that keeps its options open writes better stories"
+format:
+  html:
+    toc: true
+    code-fold: true
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup}
+library(ggplot2)
+theme_set(theme_minimal(base_size = 13))
+```
+
+## The problem: AI writing that reads like AI writing
+
+Ask a large language model (LLM) to write fiction and you'll usually get
+something technically fluent but strangely flat. Even people who can't
+articulate why will say "you can tell an AI wrote this." This document
+explains why that happens, and how a small change to how the model picks
+its next word, called the **future-entropy sampler**, produces
+noticeably better prose. No machine learning background required, just a
+comfort with probability and the idea of optionality from decision
+analysis or finance.
+
+## How an LLM actually chooses a word
+
+At each step, an LLM doesn't "decide" the next word. It produces a
+probability distribution over every possible next word, essentially a
+ranked menu of choices, and then a separate piece of logic called the
+**sampler** picks one. The model does the hard work of estimating
+likelihoods; the sampler decides the *policy* for choosing among them.
+
+That second step gets almost no attention, but it drives almost
+everything about the character of the output. Two common policies:
+
+- **Greedy sampling**: always take the single highest-probability word.
+  Deterministic, safe, and boring, like a manager who always picks the
+  option with the highest expected value on paper and never anything
+  else.
+- **Temperature sampling**: pick randomly, weighted by probability (a
+  "risk dial" from 0, fully greedy, to 2, nearly random). This is the
+  default behind most "creative" LLM output.
+
+Here's the catch: even temperature sampling only ever looks at *this*
+word's payoff. It never asks what picking this word does to the story's
+options *going forward*. That's the gap the future-entropy sampler
+closes.
+
+## Entropy: a number for "how many good options are left"
+
+Entropy is a standard measure of uncertainty in a probability
+distribution. For our purposes, read it as **optionality**: how open the
+future still is after a choice. A distribution with entropy near its
+maximum means many outcomes are roughly equally plausible; near zero
+means one outcome dominates and the rest are essentially foreclosed.
+
+```{r entropy-illustration}
+#| fig-cap: "Two 8-word 'next word' menus with the same top pick, but very different optionality. The peaked menu (left) has one dominant choice and normalized entropy near 0. The flat menu (right) keeps many words plausible and has normalized entropy near 1."
+set.seed(1)
+
+peaked <- c(0.55, 0.20, 0.08, 0.05, 0.04, 0.03, 0.03, 0.02)
+flat    <- c(0.20, 0.17, 0.15, 0.13, 0.12, 0.10, 0.08, 0.05)
+
+normalized_entropy <- function(p) {
+  p <- p / sum(p)
+  h <- -sum(p * log(p))
+  h / log(length(p))
+}
+
+df <- data.frame(
+  word = factor(rep(paste0("word ", 1:8), 2), levels = paste0("word ", 1:8)),
+  prob = c(peaked, flat),
+  menu = rep(
+    c(
+      sprintf("Peaked menu (normalized entropy = %.2f)", normalized_entropy(peaked)),
+      sprintf("Flat menu (normalized entropy = %.2f)", normalized_entropy(flat))
+    ),
+    each = 8
+  )
+)
+
+ggplot(df, aes(word, prob, fill = menu)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~menu, ncol = 2) +
+  scale_fill_manual(values = c("#2c7fb8", "#e07b39")) +
+  labs(x = NULL, y = "Probability") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Both menus above have the same top choice. But choosing from the peaked
+menu forecloses almost everything else, while the flat menu leaves the
+story many live directions. Normalized entropy puts this on a clean
+0-to-1 scale so menus of different sizes can be compared on equal
+footing.
+
+## The core idea: score a word by the optionality it unlocks
+
+The future-entropy sampler asks a question a good negotiator or
+strategist already asks instinctively: *not just "what's the best move
+right now," but "what does this move do to my options next turn?"*
+
+Concretely, for each candidate next word, the sampler:
+
+1.  Provisionally appends the word to the story so far.
+2.  Asks the model what the *following* word's menu would look like if
+    that choice were made.
+3.  Measures that menu's entropy, its optionality.
+4.  Combines that optionality score with the word's own probability into
+    a final score, and samples the next word from those scores.
+
+A word that is individually plausible *and* keeps the story's options
+open scores well. A word that is plausible but funnels the story into a
+single forced, clichéd continuation, the kind of stock phrase an LLM
+defaults to, scores worse. This is the sampler actively trading off
+"likely now" against "valuable later," the same tradeoff behind the idea
+of a real option in finance: a choice's worth isn't just its immediate
+payoff, it's the future decisions it preserves.
+
+The main cost of this approach is computational: checking "what happens
+next" for a word means literally asking the model to look one word
+ahead, which takes extra computation for every candidate word considered
+at every single step of the story. This is a real cost/quality tradeoff,
+not a free lunch: better prose for more compute, at every word the model
+writes.
+
+## A dial for how much to weight optionality: alpha
+
+The sampler exposes a single tunable knob, called **alpha**, ranging
+from -1 to 1, that sets how much weight to put on optionality versus the
+word's own plain probability:
+
+- **Alpha = -1**: ignore optionality entirely, back to ordinary
+  sampling.
+- **Alpha = 0**: weigh a word's own likelihood and its future
+  optionality equally.
+- **Alpha = 1**: ignore plain probability, chase optionality alone.
+
+This is directly analogous to a portfolio manager's risk dial, except
+instead of trading off return against volatility, it trades off
+immediate plausibility against preserved future flexibility.
+
+## An even better idea: don't pick one setting, alternate
+
+Holding alpha fixed for an entire piece of writing turned out to be less
+interesting than **letting it oscillate**. The sampler can sweep alpha
+up and down like a wave over the course of the generated text, so the
+writing alternates between calmer, more predictable stretches and more
+exploratory, option-seeking ones.
+
+```{r alpha-wave-illustration}
+#| fig-cap: "Alpha oscillating over 250 generated words. High alpha (peaks) favors optionality; low alpha (troughs) favors plain likelihood. The story's 'creative pressure' rises and falls rather than sitting at one fixed setting."
+alpha_wave <- function(step, period = 80, min_alpha = -0.7, max_alpha = 0.8) {
+  center <- (max_alpha + min_alpha) / 2
+  amplitude <- (max_alpha - min_alpha) / 2
+  center + amplitude * sin(2 * pi * step / period)
+}
+
+steps <- 0:250
+df_wave <- data.frame(step = steps, alpha = alpha_wave(steps))
+
+ggplot(df_wave, aes(step, alpha)) +
+  geom_hline(yintercept = 0, color = "grey70", linetype = "dashed") +
+  geom_line(color = "#2c7fb8", linewidth = 1) +
+  labs(
+    x = "Word position in the generated text",
+    y = "Alpha (optionality weight)"
+  ) +
+  ylim(-1, 1)
+```
+
+Think of it like a negotiation that alternates between making concrete,
+concessive offers and floating more open-ended, exploratory ones.
+Neither mode alone is as effective as the rhythm between them. Applied
+to writing, this rhythm is what produced the most engaging results in
+early testing: prose that breathes between grounded and surprising,
+rather than committing to one register for the whole piece.
+
+## Why this matters for anyone deploying LLMs
+
+The takeaway for a decision-maker evaluating AI-generated content isn't
+"turn up creativity and hope for the best." It's that the *decision
+policy* layered on top of a model, not just the model itself, has a
+large and controllable effect on output quality, and that policy can be
+designed around a business-relevant concept: **the value of keeping
+options open**, not just the value of the single best-looking choice in
+front of you.
+
+The same lens applies well beyond text generation, anywhere a system
+makes a long sequence of choices and each choice constrains what comes
+next: it's worth asking not just "what's the best next step," but "what
+does this step do to my options after that."
