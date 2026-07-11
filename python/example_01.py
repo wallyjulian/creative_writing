@@ -30,7 +30,11 @@ def main():
     parser.add_argument("--future-top-n", type=int, default=20)
     parser.add_argument("--alpha", type=float, default=0.0)
     parser.add_argument("--temperature", type=float, default=1.0)
-    parser.add_argument("--stop-sequence", default="\n\n")
+    parser.add_argument(
+        "--stop-sequence",
+        default="\n\n",
+        help='stop early when this substring appears in the generated text. Pass "" to disable and run to max_new_tokens.',
+    )
     args = parser.parse_args()
 
     model, tokenizer = load(model_name)
