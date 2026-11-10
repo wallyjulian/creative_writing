@@ -1,0 +1,30 @@
+
+python example_01.py "young man, 17th century French soldier, deep in the woods with his company, tracking the Iroquois enemy. opening sentence 
+setting the scene"
+
+OUTPUT
+Under the shadow of the ancient, moss-laced trees, the young man tightened the straps of his leather boots, the cold morning air sharp as the knife he kept tucked in his belt, 
+his company of eight silent and wary men pressing forward with the slow, deliberate pace of hunters stalking prey through the thickening dark of the pine-wooded glade. 
+The forest whispered with the hushed rustles of unseen creatures, but somewhere in the distance, the faintest sound of movement stirred a chill in the soldier’s bones—a sign, 
+he was sure, that their hunt had begun. 
+
+------------
+Chat GPT Thinking: At dawn, deep in the forests of New France, a young French soldier moved in silence with his company, searching the wet earth for signs of the 
+Iroquois war party ahead.
+
+Sonnet 4.6 Medium: (options)
+Through sensation:
+The forest had swallowed them whole — forty men reduced to the sound of their own breathing, the snap of each careful boot in the frozen crust of leaves a small catastrophe, 
+while somewhere ahead, the Iroquois left no sound at all.
+
+Through the soldier's body:
+Jean-Baptiste was nineteen years old and sweating through his woolen coat in air cold enough to see, his musket heavy across his forearms, his eyes reading the shadows 
+between the maples the way the sergeant had taught him — not looking at things, but watching for what moved.
+
+Through the landscape as threat:
+The trees gave nothing away — no birdsong, no wind, only the grey November light falling in columns through the bare canopy and the soft, deliberate hand signals of 
+Corporal Morin up ahead, urging the company forward into a silence that felt less like absence than like held breath.
+
+Stark and cinematic:
+They had been in the woods three days and he had stopped thinking of it as a forest; it was a country now, with its own logic, its own mercy, and the Iroquois moved through it 
+like men who had been born knowing both.

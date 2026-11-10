@@ -1,9 +1,6 @@
----
+------------------------------------------------------------------------
 
-editor_options: 
-  markdown: 
-    wrap: 72
----
+editor_options: markdown: wrap: 72 ---
 
 # Future-Entropy Sampler: Design Document
 

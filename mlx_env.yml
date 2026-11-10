@@ -1,0 +1,9 @@
+name: mlx
+channels:
+  - pkgw-forge
+  - ostrokach-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - mlx-lm
+prefix: /Users/louisodette/anaconda3/envs/mlx
